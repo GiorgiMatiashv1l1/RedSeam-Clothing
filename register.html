@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RedSeam Clothing - Register</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Georgian:wght@100..900&family=Noto+Serif+Georgian:wght@100..900&family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <header>
+        <a href="./home.html" class="logo">
+            <div>
+            <img src="./assets/Logo.png" alt="logo" class="logo_icon">
+            <span class="logo_text">RedSeam Clothing</span> 
+            </div>
+        </a>
+
+        <a href="./login.html" class="user_login">
+        <div class="avatar_side">
+            <div class="unauthorized_account">
+            <img src="./assets/user.png" alt="avatar" class="avatar_icon">
+            <span>Log in</span>          
+            </div>
+        </div>
+        </a>
+    </header>
+
+
+    <section class="login_hero">
+        <div class="left-login">
+            <img src="./assets/login-page-photo.png" alt="">
+        </div>
+
+        <div class="right_side">
+            <div class="right-inner">
+                <h1>Registration</h1>
+
+                <div class="avatar-container">
+                    <div class="avatar-preview">
+                        <img id="avatar-preview" src="./assets/upload-img.png" alt="avatar preview">
+                    </div>
+                    <div class="avatar-links">
+                        <input type="file" name="avatar" id="avatar" accept="image/*" style="display: none;">
+                        <a href="#" class="avatar-link upload-link" onclick="document.getElementById('avatar').click(); return false;">Upload new</a>
+                        <a href="#" class="avatar-link remove-link" onclick="removeAvatar(); return false;" style="display: none;">Remove</a>
+                    </div>
+                </div>
+
+                <div class="input-wrapper">
+                    <form action="">
+                        <div class="input-field">
+                            <input type="text" name="username" id="username" placeholder="Username">
+                        </div>
+                        <div class="input-field">
+                            <input type="email" name="email" placeholder="Email">
+                        </div>
+
+                        <div class="password-container">
+                            <input type="password" name="password" placeholder="Password" id="password">
+                            <span class="toggle-password" onclick="togglePassword()"><img src="./assets/eye.png" alt="toggle-password"></span>
+                        </div>
+                        <div class="password-container">
+                            <input type="password" name="password_confirmation" placeholder="Confirm Password" id="confirm-password">
+                            <span class="toggle-confirm-password" onclick="toggleConfirmPassword()"><img src="./assets/eye.png" alt="toggle-password"></span>
+                        </div>
+                    </form>
+                    <button type="submit" class="register-btn">Register</button>
+                </div>
+                
+                <div class="register-link">
+                    <p>Already a member?</p>
+                    <a href="./login.html">Log in</a>
+                </div>
+                    
+            </div>
+        </div>
+    </section>
+
+
+        <script src="script.js"></script>
+    <script src="api.js"></script>
+    <script>
+        // Registration form integration
+        document.addEventListener('DOMContentLoaded', function() {
+            const form = document.querySelector('form');
+            const registerBtn = document.querySelector('.register-btn');
+            
+            form.addEventListener('submit', async function(e) {
+                e.preventDefault();
+                
+                const formData = new FormData(form);
+                const userData = {
+                    email: formData.get('email'),
+                    username: formData.get('username'),
+                    password: formData.get('password'),
+                    password_confirmation: formData.get('password_confirmation'),
+                    avatar: formData.get('avatar')
+                };
+                
+                // Validate passwords match
+                if (userData.password !== userData.password_confirmation) {
+                    alert('Passwords do not match!');
+                    return;
+                }
+                
+                try {
+                    registerBtn.textContent = 'Registering...';
+                    registerBtn.disabled = true;
+                    
+                    console.log('Sending registration data:', userData);
+                    const response = await api.register(userData);
+                    console.log('Registration response:', response);
+                    alert('Registration successful!');
+                    window.location.href = './home.html';
+                } catch (error) {
+                    console.error('Registration error:', error);
+                    alert('Registration failed: ' + error.message);
+                } finally {
+                    registerBtn.textContent = 'Register';
+                    registerBtn.disabled = false;
+                }
+            });
+        });
+    </script>
+</body>
+</html>

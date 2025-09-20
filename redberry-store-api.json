@@ -1,0 +1,577 @@
+{
+  "openapi": "3.1.1",
+  "info": { "title": "Redberry store API", "version": "1.0" },
+  "tags": [
+    {
+      "name": "Authentication",
+      "description": "Endpoints related to user authentication"
+    },
+    { "name": "Products", "description": "Endpoints for managing products" },
+    {
+      "name": "Cart",
+      "description": "Endpoints for managing the shopping cart"
+    }
+  ],
+  "components": {
+    "securitySchemes": {
+      "bearerAuth": {
+        "type": "http",
+        "scheme": "bearer",
+        "bearerFormat": "JWT",
+        "description": "Token that should be sent as `Authorization: Bearer {token}` header, this token can be gotten from login and register"
+      }
+    },
+    "parameters": {
+      "AcceptHeader": {
+        "name": "Accept",
+        "in": "header",
+        "required": true,
+        "schema": { "type": "string", "default": "application/json" }
+      }
+    },
+    "responses": {
+      "TokenRequiredError": {
+        "description": "Invalid token was provided",
+        "content": {
+          "application/json": {
+            "schema": {
+              "type": "object",
+              "properties": {
+                "message": {
+                  "type": "string",
+                  "example": "Please provide valid API token"
+                }
+              }
+            }
+          }
+        }
+      },
+      "ValidationError": {
+        "description": "Validation error",
+        "content": {
+          "application/json": {
+            "schema": {
+              "type": "object",
+              "properties": {
+                "message": { "type": "string", "example": "Validation error" },
+                "errors": {
+                  "type": "object",
+                  "additionalProperties": {
+                    "type": "array",
+                    "items": { "type": "string", "example": "error message" }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "schemas": {
+      "Product": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "description": "Unique identifier for the product"
+          },
+          "name": { "type": "string", "description": "Name of the product" },
+          "description": {
+            "type": "string",
+            "description": "Description of the product"
+          },
+          "release_date": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Release date of the product"
+          },
+          "cover_image": {
+            "type": "string",
+            "format": "uri",
+            "description": "URL to the product cover image"
+          },
+          "images": {
+            "type": "array",
+            "items": { "type": "string", "format": "uri" },
+            "description": "URLs to the product images"
+          },
+          "price": {
+            "type": "number",
+            "format": "float",
+            "description": "Price of the product"
+          },
+          "total_price": {
+            "type": "number",
+            "format": "float",
+            "description": "Total price of the product including any discounts"
+          },
+          "quantity": {
+            "type": "integer",
+            "description": "Available quantity of the product"
+          },
+          "brand": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "integer",
+                "description": "Unique identifier for the brand"
+              },
+              "name": { "type": "string", "description": "Name of the brand" },
+              "image": {
+                "type": "string",
+                "format": "uri",
+                "description": "URL to the brand image"
+              }
+            }
+          }
+        }
+      },
+      "User": {
+        "type": "object",
+        "properties": {
+          "email": { "type": "string", "description": "User's email address" },
+          "name": { "type": "string", "description": "User's full name" },
+          "profile_photo": {
+            "type": "string",
+            "format": "uri",
+            "description": "URL to the user's profile photo"
+          },
+          "id": {
+            "type": "integer",
+            "description": "Unique identifier for the user"
+          }
+        }
+      }
+    }
+  },
+  "paths": {
+    "/login": {
+      "post": {
+        "parameters": [{ "$ref": "#/components/parameters/AcceptHeader" }],
+        "tags": ["Authentication"],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "email": {
+                    "type": "string",
+                    "format": "email",
+                    "default": "hello@redberry.ge"
+                  },
+                  "password": {
+                    "type": "string",
+                    "format": "password",
+                    "default": "password"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful registration",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "user": { "$ref": "#/components/schemas/User" },
+                    "token": {
+                      "type": "string",
+                      "description": "token for authenticated requests"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/TokenRequiredError" },
+          "422": { "$ref": "#/components/responses/ValidationError" }
+        }
+      }
+    },
+    "/register": {
+      "post": {
+        "parameters": [{ "$ref": "#/components/parameters/AcceptHeader" }],
+        "tags": ["Authentication"],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "email": {
+                    "type": "string",
+                    "format": "email",
+                    "default": "hello@redberry.ge",
+                    "description": "User's email address"
+                  },
+                  "username": {
+                    "type": "string",
+                    "description": "User's username",
+                    "default": "redberry"
+                  },
+                  "avatar": {
+                    "type": "string",
+                    "format": "binary",
+                    "description": "user's profile photo",
+                    "default": null
+                  },
+                  "password": {
+                    "type": "string",
+                    "format": "password",
+                    "default": "password",
+                    "description": "User's password"
+                  },
+                  "password_confirmation": {
+                    "type": "string",
+                    "default": "password",
+                    "format": "password",
+                    "description": "Confirmation of the user's password"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful registration",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "user": { "$ref": "#/components/schemas/User" },
+                    "token": {
+                      "type": "string",
+                      "description": "token for authenticated requests"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/TokenRequiredError" },
+          "422": { "$ref": "#/components/responses/ValidationError" }
+        }
+      }
+    },
+    "/products": {
+      "get": {
+        "parameters": [
+          { "$ref": "#/components/parameters/AcceptHeader" },
+          {
+            "in": "query",
+            "name": "page",
+            "schema": { "type": "integer" },
+            "description": "Page number for pagination",
+            "example": 1
+          },
+          {
+            "in": "query",
+            "name": "filter[price_from]",
+            "schema": { "type": "number" },
+            "description": "Minimum price filter",
+            "example": 100
+          },
+          {
+            "in": "query",
+            "name": "filter[price_to]",
+            "schema": { "type": "number" },
+            "description": "Maximum price filter",
+            "example": 500
+          },
+          {
+            "in": "query",
+            "name": "sort",
+            "schema": { "type": "string" },
+            "description": "Sort by field available options are price and created_at, prepend - for descending",
+            "example": "price"
+          }
+        ],
+        "tags": ["Products"],
+        "responses": {
+          "200": {
+            "description": "List of products",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "id": {
+                            "type": "integer",
+                            "description": "Unique identifier for the product"
+                          },
+                          "name": {
+                            "type": "string",
+                            "description": "Name of the product"
+                          },
+                          "release_year": {
+                            "type": "string",
+                            "format": "number",
+                            "description": "Release year of the product"
+                          },
+                          "image": {
+                            "type": "string",
+                            "format": "uri",
+                            "description": "URL to the product image"
+                          },
+                          "price": {
+                            "type": "number",
+                            "format": "number",
+                            "description": "Price of the product"
+                          }
+                        }
+                      }
+                    },
+                    "links": {
+                      "type": "object",
+                      "properties": {
+                        "first": {
+                          "type": "string",
+                          "format": "uri",
+                          "description": "URL to the first page of results"
+                        },
+                        "last": {
+                          "type": "string",
+                          "format": "uri",
+                          "description": "URL to the last page of results"
+                        },
+                        "prev": {
+                          "type": "string",
+                          "format": "uri",
+                          "description": "URL to the previous page of results"
+                        },
+                        "next": {
+                          "type": "string",
+                          "format": "uri",
+                          "description": "URL to the next page of results"
+                        }
+                      }
+                    },
+                    "meta": {
+                      "type": "object",
+                      "properties": {
+                        "current_page": {
+                          "type": "integer",
+                          "description": "Current page number"
+                        },
+                        "current_page_url": {
+                          "type": "string",
+                          "format": "uri",
+                          "description": "URL of the current page"
+                        },
+                        "from": {
+                          "type": "integer",
+                          "description": "Starting item index on the current page"
+                        },
+                        "path": {
+                          "type": "string",
+                          "format": "uri",
+                          "description": "Base URL for the API endpoint"
+                        },
+                        "per_page": {
+                          "type": "integer",
+                          "description": "Number of items per page"
+                        },
+                        "to": {
+                          "type": "integer",
+                          "description": "Ending item index on the current page"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/products/{id}": {
+      "get": {
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "schema": { "type": "integer" },
+            "required": true
+          },
+          { "$ref": "#/components/parameters/AcceptHeader" }
+        ],
+        "tags": ["Products"],
+        "responses": {
+          "200": {
+            "description": "Product details",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/Product" }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/cart/products/{product}": {
+      "parameters": [
+        { "$ref": "#/components/parameters/AcceptHeader" },
+        {
+          "in": "path",
+          "name": "product",
+          "schema": { "type": "integer" },
+          "required": true
+        }
+      ],
+      "post": {
+        "tags": ["Cart"],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "quantity": {
+                    "type": "integer",
+                    "description": "Number of products to add to the cart",
+                    "example": 1
+                  },
+                  "color": {
+                    "type": "string",
+                    "description": "Color of the product",
+                    "example": "red"
+                  },
+                  "size": {
+                    "type": "string",
+                    "description": "Size of the product",
+                    "example": "M"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Product added to cart",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/Product" }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/TokenRequiredError" },
+          "422": { "$ref": "#/components/responses/ValidationError" }
+        }
+      },
+      "patch": {
+        "tags": ["Cart"],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "quantity": {
+                    "type": "integer",
+                    "description": "New quantity of the product in the cart",
+                    "example": 2
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Product quantity updated in cart",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/Product" }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/TokenRequiredError" },
+          "422": { "$ref": "#/components/responses/ValidationError" }
+        }
+      },
+      "delete": {
+        "tags": ["Cart"],
+        "responses": {
+          "204": { "description": "Product removed from cart" },
+          "401": { "$ref": "#/components/responses/TokenRequiredError" }
+        }
+      }
+    },
+    "/cart": {
+      "parameters": [{ "$ref": "#/components/parameters/AcceptHeader" }],
+      "get": {
+        "tags": ["Cart"],
+        "responses": {
+          "200": {
+            "description": "List of products in the cart",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": { "$ref": "#/components/schemas/Product" }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/cart/checkout": {
+      "parameters": [{ "$ref": "#/components/parameters/AcceptHeader" }],
+      "post": {
+        "tags": ["Cart"],
+        "responses": {
+          "200": {
+            "description": "Checkout successful",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string",
+                      "example": "Checkout successful"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string",
+                      "example": "Your cart is empty"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/TokenRequiredError" }
+        }
+      }
+    }
+  }
+}

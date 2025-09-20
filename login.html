@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RedSeam Clothing - Home</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Georgian:wght@100..900&family=Noto+Serif+Georgian:wght@100..900&family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    
+    <header>
+        <a href="./home.html" class="logo">
+            <div>
+            <img src="./assets/Logo.png" alt="logo" class="logo_icon">
+            <span class="logo_text">RedSeam Clothing</span> 
+            </div>
+        </a>
+
+        <a href="./login.html" class="user_login">
+        <div class="avatar_side">
+            <div class="unauthorized_account">
+            <img src="./assets/user.png" alt="avatar" class="avatar_icon">
+            <span>Log in</span>          
+            </div>
+        </div>
+        </a>
+    </header>
+
+
+    <section class="login_hero">
+        <div class="left-login">
+            <img src="./assets/login-page-photo.png" alt="">
+        </div>
+
+        <div class="right_side">
+            <div class="right-inner">
+                <h1>Log in</h1>
+
+                <div class="input-wrapper">
+                    <form action="">
+                        <div class="input-field">
+                            <input type="email" name="email" placeholder="Email">
+                        </div>
+
+                        <div class="password-container">
+                            <input type="password" name="password" placeholder="Password" id="password">
+                            <span class="toggle-password" onclick="togglePassword()"><img src="./assets/eye.png" alt="toggle-password"></span>
+                        </div>
+                    </form>
+                    <button type="submit" class="login-btn">Log in</button>
+                </div>
+                    <div class="register-link">
+                        <p>Not a member?</p>
+                        <a href="./register.html">Register</a>
+                    </div>
+            </div>
+        </div>
+    </section>
+
+
+    <script src="script.js"></script>
+    <script src="api.js"></script>
+    <script>
+        // Login form integration
+        document.addEventListener('DOMContentLoaded', function() {
+            const form = document.querySelector('form');
+            const loginBtn = document.querySelector('.login-btn');
+            
+            form.addEventListener('submit', async function(e) {
+                e.preventDefault();
+                
+                const formData = new FormData(form);
+                const email = formData.get('email');
+                const password = formData.get('password');
+                
+                try {
+                    loginBtn.textContent = 'Logging in...';
+                    loginBtn.disabled = true;
+                    
+                    console.log('Sending login data:', { email, password });
+                    const response = await api.login(email, password);
+                    console.log('Login response:', response);
+                    alert('Login successful!');
+                    window.location.href = './home.html';
+                } catch (error) {
+                    console.error('Login error:', error);
+                    alert('Login failed: ' + error.message);
+                } finally {
+                    loginBtn.textContent = 'Log in';
+                    loginBtn.disabled = false;
+                }
+            });
+        });
+    </script>
+</body>
+</html>
