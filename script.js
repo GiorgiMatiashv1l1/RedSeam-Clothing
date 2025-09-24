@@ -130,3 +130,76 @@ function togglePassword() {
 
     updatePaginationState();
   });
+
+
+  //pagination
+  const cardsPerPage = 10
+  const productsWrapper = document.querySelector('.products-wrapper');
+  const pagination = document.getElementById('pagination');
+  const prevButton = document.querySelector('.pagination-previous');
+  const nextButton = document.querySelector('.pagination-next');
+  const pageLinks = document.querySelectorAll('.page-link');
+
+  const cards = Array.from(productsWrapper.getElementsByClassName('product-card'));
+
+  const totalPages = Math.ceil(cards.length / cardsPerPage);
+  let currentPage = 1;
+
+  function displayPage(page){
+    const startIndex = (page - 1) * cardsPerPage;
+    const endIndex =  startIndex + cardsPerPage;
+    cards.forEach((card, index)=>{
+      if(index >= startIndex && index < endIndex){
+        card.style.display = 'block';
+      }else{
+        card.style.display = 'none';
+      }
+    })
+  }
+
+  //pagination update
+  function updatePagination(){
+    pageNumbers.TextContent = 
+      `Page ${currentPage} of ${totalPages}`;
+      prevButton.disabled = currentPage === 1;
+      nextButton.disabled = currentPage === totalPages;
+      pageLinks.forEach((link)=>{
+        const page = parseInt(link.getAttribute('data-page'));
+        link.classList.toggle('activate', page === currentPage)
+      })
+  }
+
+  //previous button event
+  prevButton.addEventListener('click', ()=>{
+    if(currentPage > 1){
+      currentPage--;
+      displayPage(currentPage);
+      updatePagination();
+    }
+  });
+
+  //next button event
+  nextButton.addEventListener('click', ()=>{
+    if(currentPage < totalPages){
+      currentPage++;
+      displayPage(currentPage);
+      updatePagination()
+    }
+  })
+  
+  //page number event
+  pageLinks.forEach((link)=>{
+    link.addEventListener(click, (e)=>{
+      e.preventDefault();
+      const page = parseInt(link.getAttribute('data-page'));
+      if(page !== currentPage){
+        currentPage = page;
+        displayPage(currentPage);
+        updatePagination();
+      }
+    });
+  });
+
+  //initial display
+  displayPage(currentPage);
+  updatePagination();
