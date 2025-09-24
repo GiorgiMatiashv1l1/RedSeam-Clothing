@@ -76,130 +76,82 @@ function togglePassword() {
     };
   });
 
-  // Pagination 
-  document.addEventListener('DOMContentLoaded', function() {
-    const paginationNumbers = document.querySelectorAll('.pagination-number');
-    const prevBtn = document.querySelector('.prev-btn');
-    const nextBtn = document.querySelector('.next-btn');
-    let currentPage = 1;
 
-    paginationNumbers.forEach((btn, index) => {
-      btn.addEventListener('click', function() {
-        if (!this.classList.contains('pagination-ellipsis')) {
-          paginationNumbers.forEach(num => num.classList.remove('active'));
-          this.classList.add('active');
-          currentPage = parseInt(this.textContent);
-          updatePaginationState();
-        }
-      });
-    });
+  
+const cardsPerPage = 10;
+const productsWrapper = document.querySelector('.products-wrapper');
+const pagination = document.getElementById('pagination');
+const prevButton = document.querySelector('.pagination-previous');
+const nextButton = document.querySelector('.pagination-next');
+const pageLinks = document.querySelectorAll('.page-link');
+const pageNumbers = document.getElementById('page-numbers');
 
-    if (prevBtn) {
-      prevBtn.addEventListener('click', function() {
-        if (currentPage > 1) {
-          currentPage--;
-          updateActivePage();
-          updatePaginationState();
-        }
-      });
-    }
+const cards = productsWrapper ? Array.from(productsWrapper.getElementsByClassName('product-card')) : [];
+const totalPages = Math.max(1, Math.ceil(cards.length / cardsPerPage));
+let currentPage = 1;
 
-    if (nextBtn) {
-      nextBtn.addEventListener('click', function() {
-        if (currentPage < 10) { 
-          currentPage++;
-          updateActivePage();
-          updatePaginationState();
-        }
-      });
-    }
-
-    function updateActivePage() {
-      paginationNumbers.forEach(btn => {
-        btn.classList.remove('active');
-        if (parseInt(btn.textContent) === currentPage) {
-          btn.classList.add('active');
-        }
-      });
-    }
-
-    function updatePaginationState() {
-      if (prevBtn) prevBtn.disabled = currentPage === 1;
-      if (nextBtn) nextBtn.disabled = currentPage === 10; 
-    }
-
-    updatePaginationState();
+function displayPage(page) {
+  const startIndex = (page - 1) * cardsPerPage;
+  const endIndex = startIndex + cardsPerPage;
+  cards.forEach((card, index) => {
+    card.style.display = (index >= startIndex && index < endIndex) ? '' : 'none';
   });
+}
 
+function updatePagination() {
+  if (pageNumbers) pageNumbers.textContent = `Page ${currentPage} of ${totalPages}`;
 
-  //pagination
-  const cardsPerPage = 10
-  const productsWrapper = document.querySelector('.products-wrapper');
-  const pagination = document.getElementById('pagination');
-  const prevButton = document.querySelector('.pagination-previous');
-  const nextButton = document.querySelector('.pagination-next');
-  const pageLinks = document.querySelectorAll('.page-link');
-
-  const cards = Array.from(productsWrapper.getElementsByClassName('product-card'));
-
-  const totalPages = Math.ceil(cards.length / cardsPerPage);
-  let currentPage = 1;
-
-  function displayPage(page){
-    const startIndex = (page - 1) * cardsPerPage;
-    const endIndex =  startIndex + cardsPerPage;
-    cards.forEach((card, index)=>{
-      if(index >= startIndex && index < endIndex){
-        card.style.display = 'block';
-      }else{
-        card.style.display = 'none';
-      }
-    })
+  if (prevButton) {
+    prevButton.style.opacity = currentPage === 1 ? '0.5' : '1';
+    prevButton.style.pointerEvents = currentPage === 1 ? 'none' : 'auto';
+    prevButton.setAttribute('aria-disabled', currentPage === 1 ? 'true' : 'false');
   }
 
-  //pagination update
-  function updatePagination(){
-    pageNumbers.TextContent = 
-      `Page ${currentPage} of ${totalPages}`;
-      prevButton.disabled = currentPage === 1;
-      nextButton.disabled = currentPage === totalPages;
-      pageLinks.forEach((link)=>{
-        const page = parseInt(link.getAttribute('data-page'));
-        link.classList.toggle('activate', page === currentPage)
-      })
+  if (nextButton) {
+    nextButton.style.opacity = currentPage === totalPages ? '0.5' : '1';
+    nextButton.style.pointerEvents = currentPage === totalPages ? 'none' : 'auto';
+    nextButton.setAttribute('aria-disabled', currentPage === totalPages ? 'true' : 'false');
   }
 
-  //previous button event
-  prevButton.addEventListener('click', ()=>{
-    if(currentPage > 1){
+  pageLinks.forEach(link => {
+    const page = parseInt(link.getAttribute('data-page'), 10);
+    if (!Number.isNaN(page)) link.classList.toggle('active', page === currentPage);
+  });
+}
+
+if (prevButton) {
+  prevButton.addEventListener('click', (e) => {
+    e.preventDefault();
+    if (currentPage > 1) {
       currentPage--;
       displayPage(currentPage);
       updatePagination();
     }
   });
+}
 
-  //next button event
-  nextButton.addEventListener('click', ()=>{
-    if(currentPage < totalPages){
+if (nextButton) {
+  nextButton.addEventListener('click', (e) => {
+    e.preventDefault();
+    if (currentPage < totalPages) {
       currentPage++;
       displayPage(currentPage);
-      updatePagination()
+      updatePagination();
     }
-  })
-  
-  //page number event
-  pageLinks.forEach((link)=>{
-    link.addEventListener(click, (e)=>{
-      e.preventDefault();
-      const page = parseInt(link.getAttribute('data-page'));
-      if(page !== currentPage){
-        currentPage = page;
-        displayPage(currentPage);
-        updatePagination();
-      }
-    });
   });
+}
 
-  //initial display
-  displayPage(currentPage);
-  updatePagination();
+pageLinks.forEach((link) => {
+  link.addEventListener('click', (e) => {
+    e.preventDefault();
+    const page = parseInt(link.getAttribute('data-page'), 10);
+    if (Number.isNaN(page) || page === currentPage) return;
+    currentPage = page;
+    displayPage(currentPage);
+    updatePagination();
+  });
+});
+
+// initial
+displayPage(currentPage);
+updatePagination();
